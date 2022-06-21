@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from tkinter import *
 import tkinter as tk
+from tkinter import colorchooser
 import re
 import os
 
@@ -75,8 +76,14 @@ class Gui(object):
 
             root.geometry('%dx%d+%d+%d' % (w, h, x, y))
 
-            def exit():
+            def next_logo():
 
+                gr.clear()
+                root.destroy()
+                root2.destroy()
+                plt.close()
+
+            def exit():
                 sys.exit()
 
             def google_table():
@@ -86,9 +93,10 @@ class Gui(object):
                 print(gr_fourth)
 
                 logos_col = connectors_sheet.col_values(8)
-                name = str(files_1[0])
+                name = str(file)
                 name1 = name[5:]
 
+                print(name1)
 
                 if name1 in logos_col:
 
@@ -112,7 +120,8 @@ class Gui(object):
                 plt.close()
 
             tk.Button(root, text="Отправить в таблицу", command=google_table).grid(row=1, column=6, padx=3)
-            tk.Button(root, text="Остановить", command=exit).grid(row=3, column=6, padx=3)
+            tk.Button(root, text="Закрыть", command=exit).grid(row=1, column=8, padx=3)
+            tk.Button(root, text="Переключить", command=next_logo).grid(row=1, column=7, padx=3)
 
             tk.Label(root, text=f"Логотип:\n{file}").grid(row=2,column=6, padx=3)
 
@@ -221,15 +230,60 @@ class Gui(object):
 
     def table_two(self, color_3):
 
+        def pick_color():
+
+            color = colorchooser.askcolor(color_3, title='Измените тон')
+
+            try:
+                gr_two.clear()
+                gr_two.append(color[1])
+
+            except:
+                gr_two.append(color[1])
+
+            class GradientFrame2(tk.Canvas):
+
+                def __init__(self, parent, color1=gr_two[0], color2=gr_two[0], **kwargs):
+                    tk.Canvas.__init__(self, parent, **kwargs)
+                    self._color1 = color1
+                    self._color2 = color2
+                    self.bind("<Configure>", self._draw_gradient)
+
+                def _draw_gradient(self, event=None):
+                    self.delete("gradient")
+                    width = self.winfo_width()
+                    height = self.winfo_height()
+                    limit = width
+                    (r1, g1, b1) = self.winfo_rgb(self._color1)
+                    (r2, g2, b2) = self.winfo_rgb(self._color2)
+                    r_ratio = float(r2 - r1) / limit
+                    g_ratio = float(g2 - g1) / limit
+                    b_ratio = float(b2 - b1) / limit
+
+                    for i in range(limit):
+                        nr = int(r1 + (r_ratio * i))
+                        ng = int(g1 + (g_ratio * i))
+                        nb = int(b1 + (b_ratio * i))
+                        color = "#%4.4x%4.4x%4.4x" % (nr, ng, nb)
+                        self.create_line(i, 0, i, 80, tags=("gradient",), fill=color)
+                    self.lower("gradient")
+
+            tk.Label(root2, text=f"Ainsys Цвет 1 : {gr_two[0]}").grid(row=1, column=2)
+            GradientFrame2(root2).grid(row=3, column=2)
+
+        button = Button(root2, text="Изменить тон", command=pick_color, bg='pink', fg='white')
+        button.grid(row=2, column=2)
+
         try:
             gr_two.clear()
             gr_two.append(color_3)
+
         except:
             gr_two.append(color_3)
 
         class GradientFrame2(tk.Canvas):
 
-            def __init__(self, parent, color1=color_3, color2=color_3, **kwargs):
+            def __init__(self, parent, color1=gr_two[0], color2=gr_two[0], **kwargs):
                 tk.Canvas.__init__(self, parent, **kwargs)
                 self._color1 = color1
                 self._color2 = color2
@@ -255,12 +309,56 @@ class Gui(object):
                     self.create_line(i, 0, i, 80, tags=("gradient",), fill=color)
                 self.lower("gradient")
 
-        tk.Label(root2, text=f"Ainsys Цвет 1 : {gr_two}").grid(row=1, column=2, padx=3)
-        GradientFrame2(root2).grid(row=2, column=2)
+        tk.Label(root2, text=f"Ainsys Цвет 1 : {gr_two[0]}").grid(row=1, column=2)
+        GradientFrame2(root2).grid(row=3, column=2)
 
         root2.mainloop()
 
     def table_third(self, color_4):
+
+        def pick_color():
+
+            color = colorchooser.askcolor(color_4, title='Измените тон')
+
+            try:
+                gr_third.clear()
+                gr_third.append(color[1])
+
+            except:
+                gr_third.append(color[1])
+
+            class GradientFrame2(tk.Canvas):
+
+                def __init__(self, parent, color1=gr_third[0], color2=gr_third[0], **kwargs):
+                    tk.Canvas.__init__(self, parent, **kwargs)
+                    self._color1 = color1
+                    self._color2 = color2
+                    self.bind("<Configure>", self._draw_gradient)
+
+                def _draw_gradient(self, event=None):
+                    self.delete("gradient")
+                    width = self.winfo_width()
+                    height = self.winfo_height()
+                    limit = width
+                    (r1, g1, b1) = self.winfo_rgb(self._color1)
+                    (r2, g2, b2) = self.winfo_rgb(self._color2)
+                    r_ratio = float(r2 - r1) / limit
+                    g_ratio = float(g2 - g1) / limit
+                    b_ratio = float(b2 - b1) / limit
+
+                    for i in range(limit):
+                        nr = int(r1 + (r_ratio * i))
+                        ng = int(g1 + (g_ratio * i))
+                        nb = int(b1 + (b_ratio * i))
+                        color = "#%4.4x%4.4x%4.4x" % (nr, ng, nb)
+                        self.create_line(i, 0, i, 80, tags=("gradient",), fill=color)
+                    self.lower("gradient")
+
+            tk.Label(root2, text=f"Ainsys Цвет 1 : {gr_third[0]}").grid(row=1, column=3)
+            GradientFrame2(root2).grid(row=3, column=3)
+
+        button = Button(root2, text="Изменить тон", command=pick_color, bg='pink', fg='white')
+        button.grid(row=2, column=3)
 
         try:
             gr_third.clear()
@@ -296,12 +394,56 @@ class Gui(object):
                     self.create_line(i, 0, i, 80, tags=("gradient",), fill=color)
                 self.lower("gradient")
 
-        tk.Label(root2, text=f"Ainsys Цвет 2 : {gr_third}").grid(row=1, column=3, padx=3)
-        GradientFrame3(root2).grid(row=2, column=3)
+        tk.Label(root2, text=f"Ainsys Цвет 2 : {gr_third[0]}").grid(row=1, column=3, padx=3)
+        GradientFrame3(root2).grid(row=3, column=3)
 
         root2.mainloop()
 
     def table_fourth(self, color_5):
+
+        def pick_color():
+
+            color = colorchooser.askcolor(color_5, title='Измените тон')
+
+            try:
+                gr_fourth.clear()
+                gr_fourth.append(color[1])
+
+            except:
+                gr_fourth.append(color[1])
+
+            class GradientFrame2(tk.Canvas):
+
+                def __init__(self, parent, color1=gr_fourth[0], color2=gr_fourth[0], **kwargs):
+                    tk.Canvas.__init__(self, parent, **kwargs)
+                    self._color1 = color1
+                    self._color2 = color2
+                    self.bind("<Configure>", self._draw_gradient)
+
+                def _draw_gradient(self, event=None):
+                    self.delete("gradient")
+                    width = self.winfo_width()
+                    height = self.winfo_height()
+                    limit = width
+                    (r1, g1, b1) = self.winfo_rgb(self._color1)
+                    (r2, g2, b2) = self.winfo_rgb(self._color2)
+                    r_ratio = float(r2 - r1) / limit
+                    g_ratio = float(g2 - g1) / limit
+                    b_ratio = float(b2 - b1) / limit
+
+                    for i in range(limit):
+                        nr = int(r1 + (r_ratio * i))
+                        ng = int(g1 + (g_ratio * i))
+                        nb = int(b1 + (b_ratio * i))
+                        color = "#%4.4x%4.4x%4.4x" % (nr, ng, nb)
+                        self.create_line(i, 0, i, 80, tags=("gradient",), fill=color)
+                    self.lower("gradient")
+
+            tk.Label(root2, text=f"Ainsys Цвет 1 : {gr_fourth[0]}").grid(row=1, column=4)
+            GradientFrame2(root2).grid(row=3, column=4)
+
+        button = Button(root2, text="Изменить тон", command=pick_color, bg='pink', fg='white')
+        button.grid(row=2, column=4)
 
         try:
             gr_fourth.clear()
@@ -337,8 +479,8 @@ class Gui(object):
                     self.create_line(i, 0, i, 80, tags=("gradient",), fill=color)
                 self.lower("gradient")
 
-        tk.Label(root2, text=f"Ainsys Цвет 3 : {gr_fourth}").grid(row=3, column=2, padx=3)
-        GradientFrame4(root2).grid(row=4, column=2)
+        tk.Label(root2, text=f"Ainsys Цвет 3 : {gr_fourth}").grid(row=1, column=4, padx=3)
+        GradientFrame4(root2).grid(row=3, column=4)
 
         root2.mainloop()
 
