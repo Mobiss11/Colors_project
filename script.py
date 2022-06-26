@@ -1,32 +1,41 @@
 import sys
 from pathlib import Path
+import pathlib
 from tkinter import *
 import tkinter as tk
 from tkinter import colorchooser
 import re
 import os
+from tkinter.tix import *
+import shutil
 
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import gspread
-from PIL import Image
+import cv2
+import numpy as np
 
 from config import *
 from consts import *
 
-credentials = gspread.service_account(filename=FILE_NAME)
-sheet = credentials.open_by_url(PATH_TABLE)
-connectors_sheet = sheet.worksheet(WORKSHEET)
-
 directory = DIR
+directory_all = DIR2
 
 files = Path(directory).glob('*')
-files_1 = []
+files2 = Path(directory_all).glob('*')
 
 gr = []
 gr_two = []
 gr_third = []
 gr_fourth = []
+
+window_gr_1 = np.zeros((190, 390, 3), dtype='uint8')
+window_gr_2 = np.zeros((190, 390, 3), dtype='uint8')
+window_1 = np.zeros((90, 400, 3), dtype='uint8')
+window_2 = np.zeros((90, 400, 3), dtype='uint8')
+window_3 = np.zeros((90, 400, 3), dtype='uint8')
+
+credentials = gspread.service_account(filename=FILE_NAME)
+sheet = credentials.open_by_url(PATH_TABLE)
+connectors_sheet = sheet.worksheet(WORKSHEET)
 
 
 class Gui(object):
@@ -37,20 +46,26 @@ class Gui(object):
     def build_gui(self):
 
         for file in files:
-            files_1.append(str(file))
 
-            im = Image.open(file)
-            obj = im.load()
-            height = im.size[1]
+            img = cv2.imread(str(file))
+            img2 = cv2.imread(str(file))
+            img = cv2.resize(img, (256, 256))
+            img2 = cv2.resize(img2, (img2.shape[1] // 12, img2.shape[0] // 12))
 
-            plt.imshow(mpimg.imread(file))
-            plt.ion()
-            plt.show()
+            winname = str(file)[16:][:-3]
+            cv2.namedWindow(winname)
+            cv2.moveWindow(winname, 1617, 17)
+            cv2.imshow(winname, img)
+
+            height = np.size(img2, 0)
+            width = np.size(img2, 1)
 
             colors = []
-            for i in range(1, height):
-                color = str(obj[i, i])
-                colors.append(color)
+            for i in range(1, width):
+                for l in range(1, height):
+                    (b, g, r) = img2[l, i]
+                    color = str((r, g, b))
+                    colors.append(color)
 
             colors2 = []
 
@@ -61,20 +76,85 @@ class Gui(object):
             colors = colors2
 
             root = Tk()
+            root.title(TITLE)
+            root.iconbitmap(ICON)
+            root.config(bg=BG_WINDOW)
+            root.geometry(ROOT_CONSTANT)
 
-            global root2
-            root2 = Tk()
+            scroll_win = ScrolledWindow(root, width=300, height=460)
+            scroll_win.grid(row=3, column=1, padx=5, pady=3)
+            win = scroll_win.window
 
-            width = 900
-            height = 950
+            def sort(*args):
 
-            width_screen = root.winfo_screenwidth()
-            height_screen = root.winfo_screenheight()
+                for file_name in files:
+                    os.remove(file_name)
 
-            cor_x = (width_screen / 2) - (width / 2)
-            cor_y = (height_screen / 2) - (height / 2)
+                variable_option = variable.get()
 
-            root.geometry(ROOT_CONSTANT % (width, height, cor_x, cor_y))
+                if variable_option == 'RU':
+
+                    logos = connectors_sheet.col_values(8)
+                    logos.pop(0)
+
+                    logos_ru = connectors_sheet.col_values(14)
+                    logos_ru.pop(0)
+
+                    local_name = []
+
+                    for name, number in zip(logos, logos_ru):
+
+                        try:
+                            if int(number) in range(1, 6000):
+                                local_name.append(name)
+                        except:
+                            print()
+
+                    for file_name in files2:
+                        for i in local_name:
+                            if i == str(file_name)[14:]:
+                                print(i)
+                                shutil.copyfile(file_name, f'{DIR}{i}')
+
+                    tk.Label(root,
+                             text=ClOSE_WINDOW_TEXT,
+                             fg=LABEL_COLOR,
+                             font=9).grid(row=1,
+                                          column=1,
+                                          padx=2,
+                                          pady=2)
+
+                elif variable_option == 'EN':
+
+                    logos = connectors_sheet.col_values(8)
+                    logos.pop(0)
+
+                    logos_ru = connectors_sheet.col_values(16)
+                    logos_ru.pop(0)
+
+                    local_name = []
+
+                    for name, number in zip(logos, logos_ru):
+
+                        try:
+                            if int(number) in range(1, 6000):
+                                local_name.append(name)
+                        except:
+                            print()
+
+                    for file_name in files2:
+                        for i in local_name:
+                            if i == str(file_name)[14:]:
+                                print(i)
+                                shutil.copyfile(file_name, f'{DIR}{i}')
+
+                    tk.Label(root,
+                             text=ClOSE_WINDOW_TEXT,
+                             fg=LABEL_COLOR,
+                             font=9).grid(row=1,
+                                          column=1,
+                                          padx=2,
+                                          pady=2)
 
             def reset_gradient():
                 gr.clear()
@@ -82,509 +162,500 @@ class Gui(object):
             def next_logo():
 
                 gr.clear()
-                root.destroy()
-                root2.destroy()
-                plt.close()
+                gr_two.clear()
+                gr_third.clear()
+                gr_fourth.clear()
+
+                try:
+                    root.destroy()
+                except:
+                    print()
+
+                try:
+                    root1.destroy()
+                except:
+                    print()
+
+                try:
+                    root2.destroy()
+                except:
+                    print()
+
+                try:
+                    root3.destroy()
+                except:
+                    print()
+
+                try:
+                    root4.destroy()
+                except:
+                    print()
+
+                cv2.destroyAllWindows()
 
             def exit_window():
                 sys.exit()
 
             def google_table():
 
+                re_digits_table_format = re.compile(r"\b\d+\b")
+
+                ls_gr = re_digits_table_format.findall(gr[0])
+                hex_color_gr_1 = HEX_CONSTANT % (int(ls_gr[0]), int(ls_gr[1]), int(ls_gr[2]))
+
+                ls1 = re_digits_table_format.findall(gr[1])
+                hex_color_gr_2 = HEX_CONSTANT % (int(ls1[0]), int(ls1[1]), int(ls1[2]))
+
+                ls2 = re_digits_table_format.findall(gr_two[0])
+                hex_color_t_1 = HEX_CONSTANT % (int(ls2[0]), int(ls2[1]), int(ls2[2]))
+
+                ls3 = re_digits_table_format.findall(gr_third[0])
+                hex_color_t_2 = HEX_CONSTANT % (int(ls3[0]), int(ls3[1]), int(ls3[2]))
+
+                ls4 = re_digits_table_format.findall(gr_fourth[0])
+                hex_color_t_3 = HEX_CONSTANT % (int(ls4[0]), int(ls4[1]), int(ls4[2]))
+
                 logos_col = connectors_sheet.col_values(8)
                 name_logo_file = str(file)
-                name_logo_file_table = name_logo_file[5:]
+                name_logo_file_table = name_logo_file[16:]
 
                 if name_logo_file_table in logos_col:
 
                     index_logo = logos_col.index(name_logo_file_table)
                     row = index_logo + 1
 
-                    connectors_sheet.update(f'I{row}', gr[0])
-                    connectors_sheet.update(f'J{row}', gr[1])
-                    connectors_sheet.update(f'K{row}', gr_two[0])
-                    connectors_sheet.update(f'L{row}', gr_third[0])
-                    connectors_sheet.update(f'M{row}', gr_fourth[0])
-
-                    files_1.pop(0)
-                    os.remove(file)
+                    connectors_sheet.update(f'I{row}', hex_color_gr_1)
+                    connectors_sheet.update(f'J{row}', hex_color_gr_2)
+                    connectors_sheet.update(f'K{row}', hex_color_t_1)
+                    connectors_sheet.update(f'L{row}', hex_color_t_2)
+                    connectors_sheet.update(f'M{row}', hex_color_t_3)
 
                 gr.clear()
+                gr_two.clear()
+                gr_third.clear()
+                gr_fourth.clear()
+
                 root.destroy()
+                root1.destroy()
                 root2.destroy()
-                plt.close()
+                root3.destroy()
+                root4.destroy()
+
+                cv2.destroyAllWindows()
+                os.remove(file)
+                os.remove(f"{DIR2}{str(file)[16:]}")
 
             tk.Button(root,
                       text=BUTTON_SEND,
-                      command=google_table).grid(row=1,
-                                                 column=6,
-                                                 padx=3)
+                      command=google_table,
+                      width=18,
+                      fg=FONT_COLOR2,
+                      font=BUTTON_FONT,
+                      bg=BG_COLOR_BUTTON,
+                      height=2).grid(row=1,
+                                     column=2,
+                                     padx=2,
+                                     pady=2)
             tk.Button(root,
                       text=BUTTON_CLOSE,
-                      command=exit_window).grid(row=1,
-                                                column=8,
-                                                padx=3)
+                      command=exit_window,
+                      width=18,
+                      fg=FONT_COLOR2,
+                      font=BUTTON_FONT,
+                      bg=BG_COLOR_BUTTON,
+                      height=2).grid(row=2,
+                                     column=3,
+                                     padx=2,
+                                     pady=2)
 
             tk.Button(root,
                       text=BUTTON_MISS,
-                      command=next_logo).grid(row=1,
-                                              column=7,
-                                              padx=3)
+                      command=next_logo,
+                      width=18,
+                      fg=FONT_COLOR2,
+                      font=BUTTON_FONT,
+                      bg=BG_COLOR_BUTTON,
+                      height=2).grid(row=1,
+                                     column=3,
+                                     padx=2,
+                                     pady=2)
+
             tk.Button(root,
                       text=BUTTON_RESET,
-                      command=reset_gradient).grid(row=2,
-                                                   column=7,
-                                                   padx=3)
+                      command=reset_gradient,
+                      width=18,
+                      fg=FONT_COLOR2,
+                      font=BUTTON_FONT,
+                      bg=BG_COLOR_BUTTON,
+                      height=2).grid(row=2,
+                                     column=1,
+                                     padx=2,
+                                     pady=2)
 
             tk.Label(root,
-                     text=f"{LABEL_LOGO}\n{file}").grid(row=2,
-                                                        column=6,
-                                                        padx=3)
+                     text=f"{LABEL_LOGO}\n{str(file)[16:]}",
+                     fg=LABEL_COLOR,
+                     font=LABEL_FONT).grid(row=1,
+                                           column=1,
+                                           padx=2,
+                                           pady=2)
+
+            variable = tk.StringVar(root)
+            variable.set(LABEL_MENU)
+
+            opt = tk.OptionMenu(root, variable, *SORT)
+            opt.config(width=16,
+                       height=2,
+                       font=MENU_FONT,
+                       bg=BG_COLOR_BUTTON,
+                       fg=FONT_COLOR2)
+            opt.grid(row=2, column=2)
+            variable.trace("w", sort)
 
             for color_gr in colors:
-
                 index = colors.index(color_gr)
                 re_digits = re.compile(r"\b\d+\b")
                 ls = re_digits.findall(colors[index])
 
                 hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
-
-                color_gr = hex_color
-
-                tk.Button(root,
-                          text=f'{hex_color}',
-                          fg=FONT_COLOR, bg=hex_color,
-                          command=lambda color_gr=color_gr: self.table_gradient(color_gr)).grid(row=index,
-                                                                                                column=1)
-
-            for color_3 in colors:
-
-                index = colors.index(color_3)
-
-                re_digits = re.compile(r"\b\d+\b")
-                ls = re_digits.findall(colors[index])
-
-                hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
-
-                color_3 = hex_color
-
-                tk.Button(root,
+                tk.Button(win,
                           text=f'{hex_color}',
                           fg=FONT_COLOR,
                           bg=hex_color,
+                          width=8,
+                          height=1,
+                          command=lambda color_gr=color_gr: self.table_gradient(color_gr)).grid(row=index,
+                                                                                                pady=2,
+                                                                                                padx=2,
+                                                                                                column=1)
+
+            for color_3 in colors:
+                index = colors.index(color_3)
+                re_digits = re.compile(r"\b\d+\b")
+                ls = re_digits.findall(colors[index])
+
+                hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
+                tk.Button(win,
+                          text=f'{hex_color}',
+                          fg=FONT_COLOR,
+                          bg=hex_color,
+                          width=8,
+                          height=1,
                           command=lambda color_3=color_3: self.table_two(color_3)).grid(row=index,
+                                                                                        pady=2,
+                                                                                        padx=2,
                                                                                         column=2)
 
             for color_4 in colors:
-
                 index = colors.index(color_4)
-
                 re_digits = re.compile(r"\b\d+\b")
                 ls = re_digits.findall(colors[index])
 
                 hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
-
-                color_4 = hex_color
-
-                tk.Button(root,
+                tk.Button(win,
                           text=f'{hex_color}',
-                          fg=FONT_COLOR, bg=hex_color,
+                          fg=FONT_COLOR,
+                          bg=hex_color,
+                          width=8,
+                          height=1,
                           command=lambda color_4=color_4: self.table_third(color_4)).grid(row=index,
-                                                                                          column=4)
-
+                                                                                          pady=2,
+                                                                                          padx=2,
+                                                                                          column=3)
             for color_5 in colors:
-
                 index = colors.index(color_5)
-
                 re_digits = re.compile(r"\b\d+\b")
                 ls = re_digits.findall(colors[index])
 
                 hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
-
-                color_5 = hex_color
-
-                tk.Button(root,
+                tk.Button(win,
                           text=f'{hex_color}',
-                          fg=FONT_COLOR, bg=hex_color,
+                          fg=FONT_COLOR,
+                          bg=hex_color,
+                          width=8,
+                          height=1,
                           command=lambda color_5=color_5: self.table_fourth(color_5)).grid(row=index,
-                                                                                           column=5)
+                                                                                           pady=2,
+                                                                                           padx=2,
+                                                                                           column=4)
 
             root.mainloop()
 
     def table_gradient(self, color_gr):
 
-        def pick_color():
+        global root1
 
-            color = colorchooser.askcolor(color_gr,
-                                          title=BUTTON_COLOR)
-
-            gr.append(color[1])
-
-            if len(gr) == 2:
-
-                class GradientFrame(tk.Canvas):
-
-                    def __init__(self, parent, color3=gr[0], color4=gr[1], **kwargs):
-                        tk.Canvas.__init__(self, parent, **kwargs)
-                        self._color3 = color3
-                        self._color4 = color4
-                        self.bind(CONFIG, self._draw_gradient)
-
-                    def _draw_gradient(self, event=None):
-
-                        self.delete(TAG_COLOR_TABLE)
-                        limit = 800
-                        (r1, g1, b1) = self.winfo_rgb(self._color3)
-                        (r2, g2, b2) = self.winfo_rgb(self._color4)
-                        r_ratio = float(r2 - r1) / limit
-                        g_ratio = float(g2 - g1) / limit
-                        b_ratio = float(b2 - b1) / limit
-
-                        for i in range(limit):
-                            nr = int(r1 + (r_ratio * i))
-                            ng = int(g1 + (g_ratio * i))
-                            nb = int(b1 + (b_ratio * i))
-                            color = COLOR_TABLE_CONSTANT % (nr, ng, nb)
-                            self.create_line(i, 0, i, 300, tags=(TAG_COLOR_TABLE,),fill=color)
-                        self.lower(TAG_COLOR_TABLE)
-
-                tk.Label(root2,
-                         text=f"{AINSYS_GR_1} {gr[0]}, {AINSYS_GR_2} {gr[1]}").grid(row=1,
-                                                                                    column=1,
-                                                                                    padx=3)
-                GradientFrame(root2).grid(row=3,
-                                          column=1)
-
-        tk.Button(root2,
-                  text=BUTTON_COLOR,
-                  command=pick_color,
-                  bg=BG_COLOR,
-                  fg=FONT_COLOR_W2).grid(row=2,
-                                         column=1)
+        try:
+            root1.destroy()
+        except:
+            print()
 
         gr.append(color_gr)
 
         if len(gr) == 2:
-            class GradientFrame(tk.Canvas):
 
-                def __init__(self, parent, color3=gr[0], color4=gr[1], **kwargs):
+            re_digits = re.compile(r"\b\d+\b")
+            ls = re_digits.findall(gr[0])
+            ls2 = re_digits.findall(gr[1])
 
-                    tk.Canvas.__init__(self, parent, **kwargs)
-                    self._color3 = color3
-                    self._color4 = color4
-                    self.bind(CONFIG, self._draw_gradient)
+            figure_1 = cv2.rectangle(window_gr_1, (0, 0), (400, 200), (int(ls[2]), int(ls[1]), int(ls[0])),
+                                     thickness=cv2.FILLED)
+            figure_2 = cv2.rectangle(window_gr_2, (0, 0), (400, 200), (int(ls2[2]), int(ls2[1]), int(ls2[0])),
+                                     thickness=cv2.FILLED)
 
-                def _draw_gradient(self, event=None):
+            cv2.imwrite(FILE_NAME_GR_1, figure_1)
+            cv2.imwrite(FILE_NAME_GR_2, figure_2)
 
-                    self.delete(TAG_COLOR_TABLE)
-                    limit = 800
-                    (r1, g1, b1) = self.winfo_rgb(self._color3)
-                    (r2, g2, b2) = self.winfo_rgb(self._color4)
-                    r_ratio = float(r2 - r1) / limit
-                    g_ratio = float(g2 - g1) / limit
-                    b_ratio = float(b2 - b1) / limit
+            img1 = cv2.resize(cv2.imread(FILE_NAME_GR_1), (400, 200))
+            img2 = cv2.resize(cv2.imread(FILE_NAME_GR_2), (400, 200))
 
-                    for i in range(limit):
-                        nr = int(r1 + (r_ratio * i))
-                        ng = int(g1 + (g_ratio * i))
-                        nb = int(b1 + (b_ratio * i))
-                        color = COLOR_TABLE_CONSTANT % (nr, ng, nb)
-                        self.create_line(i, 0, i, 300, tags=(TAG_COLOR_TABLE,), fill=color)
-                    self.lower(TAG_COLOR_TABLE)
+            mask1 = np.repeat(np.tile(np.linspace(1, 0, img1.shape[1]), (img1.shape[0], 1))[:, :, np.newaxis], 3,
+                              axis=2)
+            mask2 = np.repeat(np.tile(np.linspace(0, 1, img2.shape[1]), (img2.shape[0], 1))[:, :, np.newaxis], 3,
+                              axis=2)
 
-            tk.Label(root2,
-                     text=f"{AINSYS_GR_1} {gr[0]}, {AINSYS_GR_2} {gr[1]}").grid(row=1,
-                                                                                column=1,
-                                                                                padx=3)
-            GradientFrame(root2).grid(row=3,
-                                      column=1)
+            final = np.uint8(img1 * mask1 + img2 * mask2)
 
-        root2.mainloop()
+            winname = NAME_TABLE_GR
+            cv2.namedWindow(winname)
+            cv2.moveWindow(winname, 613, 17)
+            cv2.imshow(winname, final)
+
+        def pick_color():
+            hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
+
+            color = colorchooser.askcolor(hex_color,
+                                          title=BUTTON_COLOR)
+
+            gr.append(str(color[0]))
+
+            if len(gr) == 2:
+
+                re_digits_1 = re.compile(r"\b\d+\b")
+                ls_1 = re_digits_1.findall(gr[0])
+                ls_2 = re_digits_1.findall(gr[1])
+
+                figure_1_change = cv2.rectangle(window_gr_1, (0, 0), (400, 200),
+                                                (int(ls_1[2]), int(ls_1[1]), int(ls_1[0])),
+                                                thickness=cv2.FILLED)
+                figure_2_change = cv2.rectangle(window_gr_2, (0, 0), (400, 200),
+                                                (int(ls_2[2]), int(ls_2[1]), int(ls_2[0])),
+                                                thickness=cv2.FILLED)
+
+                cv2.imwrite(FILE_NAME_GR_1, figure_1_change)
+                cv2.imwrite(FILE_NAME_GR_2, figure_2_change)
+
+                img_1 = cv2.resize(cv2.imread(FILE_NAME_GR_1), (400, 200))
+                img_2 = cv2.resize(cv2.imread(FILE_NAME_GR_2), (400, 200))
+
+                mask_1 = np.repeat(np.tile(np.linspace(1, 0, img1.shape[1]), (img1.shape[0], 1))[:, :, np.newaxis], 3,
+                                  axis=2)
+                mask_2 = np.repeat(np.tile(np.linspace(0, 1, img2.shape[1]), (img2.shape[0], 1))[:, :, np.newaxis], 3,
+                                  axis=2)
+
+                final = np.uint8(img_1 * mask_1 + img_2 * mask_2)
+
+                winname = NAME_TABLE_GR
+                cv2.namedWindow(winname)
+                cv2.moveWindow(winname, 613, 17)
+                cv2.imshow(winname, final)
+
+        root1 = Tk()
+        root1.title(TITLE)
+        root1.iconbitmap(ICON)
+        root1.config(bg=BG_WINDOW)
+        root1.geometry(ROOT_CONSTANT1)
+
+        tk.Button(root1,
+                  text=BUTTON_COLOR,
+                  command=pick_color,
+                  width=18,
+                  fg=FONT_COLOR2,
+                  font=BUTTON_FONT,
+                  bg=BG_COLOR_BUTTON,
+                  height=2).grid(row=2, column=2)
 
     def table_two(self, color_3):
 
-        def pick_color():
-
-            color = colorchooser.askcolor(color_3,
-                                          title=BUTTON_COLOR)
-
-            try:
-                gr_two.clear()
-                gr_two.append(color[1])
-
-            except:
-                gr_two.append(color[1])
-
-            class GradientFrame2(tk.Canvas):
-
-                def __init__(self, parent, color1=gr_two[0], color2=gr_two[0], **kwargs):
-                    tk.Canvas.__init__(self, parent, **kwargs)
-                    self._color1 = color1
-                    self._color2 = color2
-                    self.bind(CONFIG, self._draw_gradient)
-
-                def _draw_gradient(self, event=None):
-                    self.delete(TAG_COLOR_TABLE)
-                    width = self.winfo_width()
-                    limit = width
-                    (r1, g1, b1) = self.winfo_rgb(self._color1)
-                    (r2, g2, b2) = self.winfo_rgb(self._color2)
-                    r_ratio = float(r2 - r1) / limit
-                    g_ratio = float(g2 - g1) / limit
-                    b_ratio = float(b2 - b1) / limit
-
-                    for i in range(limit):
-                        nr = int(r1 + (r_ratio * i))
-                        ng = int(g1 + (g_ratio * i))
-                        nb = int(b1 + (b_ratio * i))
-                        color = COLOR_TABLE_CONSTANT % (nr, ng, nb)
-                        self.create_line(i, 0, i, 80, tags=(TAG_COLOR_TABLE,), fill=color)
-                    self.lower(TAG_COLOR_TABLE)
-
-            tk.Label(root2,
-                     text=f"{AINSYS_TABLE1}{gr_two[0]}").grid(row=1,
-                                                              column=2)
-            GradientFrame2(root2).grid(row=3,
-                                       column=2)
-
-        tk.Button(root2,
-                  text=BUTTON_COLOR,
-                  command=pick_color,
-                  bg=BG_COLOR,
-                  fg=FONT_COLOR_W2).grid(row=2,
-                                         column=2)
+        global root2
 
         try:
+            root2.destroy()
             gr_two.clear()
             gr_two.append(color_3)
 
         except:
             gr_two.append(color_3)
 
-        class GradientFrame2(tk.Canvas):
+        re_digits = re.compile(r"\b\d+\b")
+        ls = re_digits.findall(gr_two[0])
 
-            def __init__(self, parent, color1=gr_two[0], color2=gr_two[0], **kwargs):
-                tk.Canvas.__init__(self, parent, **kwargs)
-                self._color1 = color1
-                self._color2 = color2
-                self.bind(CONFIG, self._draw_gradient)
+        cv2.rectangle(window_1, (0, 0), (400, 100), (int(ls[2]), int(ls[1]), int(ls[0])), thickness=cv2.FILLED)
 
-            def _draw_gradient(self, event=None):
-
-                self.delete(TAG_COLOR_TABLE)
-                width = self.winfo_width()
-                limit = width
-                (r1, g1, b1) = self.winfo_rgb(self._color1)
-                (r2, g2, b2) = self.winfo_rgb(self._color2)
-                r_ratio = float(r2 - r1) / limit
-                g_ratio = float(g2 - g1) / limit
-                b_ratio = float(b2 - b1) / limit
-
-                for i in range(limit):
-                    nr = int(r1 + (r_ratio * i))
-                    ng = int(g1 + (g_ratio * i))
-                    nb = int(b1 + (b_ratio * i))
-                    color = COLOR_TABLE_CONSTANT % (nr, ng, nb)
-                    self.create_line(i, 0, i, 80, tags=(TAG_COLOR_TABLE,), fill=color)
-                self.lower(TAG_COLOR_TABLE)
-
-        tk.Label(root2,
-                 text=f"{AINSYS_TABLE1}{gr_two[0]}").grid(row=1,
-                                                          column=2)
-        GradientFrame2(root2).grid(row=3,
-                                   column=2)
-
-        root2.mainloop()
-
-    def table_third(self, color_4):
+        winname = NAME_TABLE_AINSYS_1
+        cv2.namedWindow(winname)
+        cv2.moveWindow(winname, 613, 250)
+        cv2.imshow(winname, window_1)
 
         def pick_color():
 
-            color = colorchooser.askcolor(color_4,
+            hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
+
+            color = colorchooser.askcolor(hex_color,
                                           title=BUTTON_COLOR)
 
             try:
-                gr_third.clear()
-                gr_third.append(color[1])
+                gr_two.clear()
+                gr_two.append(str(color[0]))
 
             except:
-                gr_third.append(color[1])
+                gr_two.append(str(color[0]))
 
-            class GradientFrame2(tk.Canvas):
+            re_digits2 = re.compile(r"\b\d+\b")
+            ls2 = re_digits2.findall(str(color[0]))
 
-                def __init__(self, parent, color1=gr_third[0], color2=gr_third[0], **kwargs):
-                    tk.Canvas.__init__(self, parent, **kwargs)
-                    self._color1 = color1
-                    self._color2 = color2
-                    self.bind(CONFIG, self._draw_gradient)
+            cv2.rectangle(window_1, (0, 0), (400, 100), (int(ls2[2]), int(ls2[1]), int(ls2[0])), thickness=cv2.FILLED)
 
-                def _draw_gradient(self, event=None):
-                    self.delete(TAG_COLOR_TABLE)
-                    width = self.winfo_width()
-                    limit = width
-                    (r1, g1, b1) = self.winfo_rgb(self._color1)
-                    (r2, g2, b2) = self.winfo_rgb(self._color2)
-                    r_ratio = float(r2 - r1) / limit
-                    g_ratio = float(g2 - g1) / limit
-                    b_ratio = float(b2 - b1) / limit
+            winname = NAME_TABLE_AINSYS_1
+            cv2.namedWindow(winname)
+            cv2.moveWindow(winname, 613, 250)
+            cv2.imshow(winname, window_1)
 
-                    for i in range(limit):
-                        nr = int(r1 + (r_ratio * i))
-                        ng = int(g1 + (g_ratio * i))
-                        nb = int(b1 + (b_ratio * i))
-                        color = COLOR_TABLE_CONSTANT % (nr, ng, nb)
-                        self.create_line(i, 0, i, 80, tags=(TAG_COLOR_TABLE,), fill=color)
-                    self.lower(TAG_COLOR_TABLE)
-
-            tk.Label(root2,
-                     text=f"{AINSYS_TABLE2}{gr_third[0]}").grid(row=1,
-                                                                column=3)
-            GradientFrame2(root2).grid(row=3,
-                                       column=3)
+        root2 = Tk()
+        root2.title(TITLE)
+        root2.iconbitmap(ICON)
+        root2.config(bg=BG_WINDOW)
+        root2.geometry(ROOT_CONSTANT2)
 
         tk.Button(root2,
                   text=BUTTON_COLOR,
                   command=pick_color,
-                  bg=BG_COLOR,
-                  fg=FONT_COLOR_W2).grid(row=2,
-                                         column=3)
+                  width=18,
+                  fg=FONT_COLOR2,
+                  font=BUTTON_FONT,
+                  bg=BG_COLOR_BUTTON,
+                  height=2).grid(row=2,
+                                 column=2)
+
+    def table_third(self, color_4):
+
+        global root3
 
         try:
+            root3.destroy()
             gr_third.clear()
             gr_third.append(color_4)
         except:
             gr_third.append(color_4)
 
-        class GradientFrame3(tk.Canvas):
+        re_digits = re.compile(r"\b\d+\b")
+        ls = re_digits.findall(gr_third[0])
 
-            def __init__(self, parent, color1=color_4, color2=color_4, **kwargs):
-                tk.Canvas.__init__(self, parent, **kwargs)
-                self._color1 = color1
-                self._color2 = color2
-                self.bind(CONFIG, self._draw_gradient)
+        cv2.rectangle(window_2, (0, 0), (400, 100), (int(ls[2]), int(ls[1]), int(ls[0])), thickness=cv2.FILLED)
 
-            def _draw_gradient(self, event=None):
-
-                self.delete(TAG_COLOR_TABLE)
-                width = self.winfo_width()
-                limit = width
-                (r1, g1, b1) = self.winfo_rgb(self._color1)
-                (r2, g2, b2) = self.winfo_rgb(self._color2)
-                r_ratio = float(r2 - r1) / limit
-                g_ratio = float(g2 - g1) / limit
-                b_ratio = float(b2 - b1) / limit
-
-                for i in range(limit):
-                    nr = int(r1 + (r_ratio * i))
-                    ng = int(g1 + (g_ratio * i))
-                    nb = int(b1 + (b_ratio * i))
-                    color = COLOR_TABLE_CONSTANT % (nr, ng, nb)
-                    self.create_line(i, 0, i, 80, tags=(TAG_COLOR_TABLE,), fill=color)
-                self.lower(TAG_COLOR_TABLE)
-
-        tk.Label(root2,
-                 text=f"{AINSYS_TABLE2}{gr_third[0]}").grid(row=1,
-                                                            column=3,
-                                                            padx=3)
-        GradientFrame3(root2).grid(row=3,
-                                   column=3)
-
-        root2.mainloop()
-
-    def table_fourth(self, color_5):
+        winname = NAME_TABLE_AINSYS_2
+        cv2.namedWindow(winname)
+        cv2.moveWindow(winname, 613, 372)
+        cv2.imshow(winname, window_2)
 
         def pick_color():
 
-            color = colorchooser.askcolor(color_5,
+            hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
+
+            color = colorchooser.askcolor(hex_color,
+                                          title=BUTTON_COLOR)
+
+            try:
+                gr_third.clear()
+                gr_third.append(str(color[0]))
+
+            except:
+                gr_third.append(str(color[0]))
+
+            re_digits2 = re.compile(r"\b\d+\b")
+            ls2 = re_digits2.findall(str(color[0]))
+
+            cv2.rectangle(window_2, (0, 0), (400, 100), (int(ls2[2]), int(ls2[1]), int(ls2[0])), thickness=cv2.FILLED)
+
+            winname = NAME_TABLE_AINSYS_2
+            cv2.namedWindow(winname)
+            cv2.moveWindow(winname, 613, 372)
+            cv2.imshow(winname, window_2)
+
+        root3 = Tk()
+        root3.title(TITLE)
+        root3.iconbitmap(ICON)
+        root3.config(bg=BG_WINDOW)
+        root3.geometry(ROOT_CONSTANT3)
+
+        tk.Button(root3,
+                  text=BUTTON_COLOR,
+                  command=pick_color,
+                  width=18,
+                  fg=FONT_COLOR2,
+                  font=BUTTON_FONT,
+                  bg=BG_COLOR_BUTTON,
+                  height=2).grid(row=2, column=2)
+
+    def table_fourth(self, color_5):
+
+        global root4
+
+        try:
+            root4.destroy()
+            gr_fourth.clear()
+            gr_fourth.append(color_5)
+        except:
+            gr_fourth.append(color_5)
+
+        re_digits = re.compile(r"\b\d+\b")
+        ls = re_digits.findall(gr_fourth[0])
+
+        cv2.rectangle(window_3, (0, 0), (400, 100), (int(ls[2]), int(ls[1]), int(ls[0])), thickness=cv2.FILLED)
+
+        winname = NAME_TABLE_AINSYS_3
+        cv2.namedWindow(winname)
+        cv2.moveWindow(winname, 613, 495)
+        cv2.imshow(winname, window_3)
+
+        def pick_color():
+
+            hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
+
+            color = colorchooser.askcolor(hex_color,
                                           title=BUTTON_COLOR)
 
             try:
                 gr_fourth.clear()
-                gr_fourth.append(color[1])
+                gr_fourth.append(str(color[0]))
 
             except:
-                gr_fourth.append(color[1])
+                gr_fourth.append(str(color[0]))
 
-            class GradientFrame2(tk.Canvas):
+            re_digits2 = re.compile(r"\b\d+\b")
+            ls2 = re_digits2.findall(str(color[0]))
 
-                def __init__(self, parent, color1=gr_fourth[0], color2=gr_fourth[0], **kwargs):
-                    tk.Canvas.__init__(self, parent, **kwargs)
-                    self._color1 = color1
-                    self._color2 = color2
-                    self.bind(CONFIG, self._draw_gradient)
+            cv2.rectangle(window_3, (0, 0), (400, 100), (int(ls2[2]), int(ls2[1]), int(ls2[0])), thickness=cv2.FILLED)
 
-                def _draw_gradient(self, event=None):
-                    self.delete(TAG_COLOR_TABLE)
-                    width = self.winfo_width()
-                    limit = width
-                    (r1, g1, b1) = self.winfo_rgb(self._color1)
-                    (r2, g2, b2) = self.winfo_rgb(self._color2)
-                    r_ratio = float(r2 - r1) / limit
-                    g_ratio = float(g2 - g1) / limit
-                    b_ratio = float(b2 - b1) / limit
+            winname = NAME_TABLE_AINSYS_3
+            cv2.namedWindow(winname)
+            cv2.moveWindow(winname, 613, 495)
+            cv2.imshow(winname, window_3)
 
-                    for i in range(limit):
-                        nr = int(r1 + (r_ratio * i))
-                        ng = int(g1 + (g_ratio * i))
-                        nb = int(b1 + (b_ratio * i))
-                        color = COLOR_TABLE_CONSTANT % (nr, ng, nb)
-                        self.create_line(i, 0, i, 80, tags=(TAG_COLOR_TABLE,), fill=color)
-                    self.lower(TAG_COLOR_TABLE)
+        root4 = Tk()
+        root4.title(TITLE)
+        root4.iconbitmap(ICON)
+        root4.config(bg=BG_WINDOW)
+        root4.geometry(ROOT_CONSTANT4)
 
-            tk.Label(root2,
-                     text=f"{AINSYS_TABLE3}{gr_fourth[0]}").grid(row=1,
-                                                                 column=4)
-            GradientFrame2(root2).grid(row=3,
-                                       column=4)
-
-        tk.Button(root2,
+        tk.Button(root4,
                   text=BUTTON_COLOR,
                   command=pick_color,
-                  bg=BG_COLOR,
-                  fg=FONT_COLOR_W2).grid(row=2,
-                                         column=4)
-
-        try:
-            gr_fourth.clear()
-            gr_fourth.append(color_5)
-        except:
-            gr_third.append(color_5)
-
-        class GradientFrame4(tk.Canvas):
-
-            def __init__(self, parent, color1=color_5, color2=color_5, **kwargs):
-                tk.Canvas.__init__(self, parent, **kwargs)
-                self._color1 = color1
-                self._color2 = color2
-                self.bind(CONFIG, self._draw_gradient)
-
-            def _draw_gradient(self, event=None):
-
-                self.delete(TAG_COLOR_TABLE)
-                width = self.winfo_width()
-                limit = width
-                (r1, g1, b1) = self.winfo_rgb(self._color1)
-                (r2, g2, b2) = self.winfo_rgb(self._color2)
-                r_ratio = float(r2 - r1) / limit
-                g_ratio = float(g2 - g1) / limit
-                b_ratio = float(b2 - b1) / limit
-
-                for i in range(limit):
-                    nr = int(r1 + (r_ratio * i))
-                    ng = int(g1 + (g_ratio * i))
-                    nb = int(b1 + (b_ratio * i))
-                    color = COLOR_TABLE_CONSTANT % (nr, ng, nb)
-                    self.create_line(i, 0, i, 80, tags=(TAG_COLOR_TABLE,), fill=color)
-                self.lower(TAG_COLOR_TABLE)
-
-        tk.Label(root2,
-                 text=f"{AINSYS_TABLE3}{gr_fourth[0]}").grid(row=1,
-                                                             column=4,
-                                                             padx=3)
-        GradientFrame4(root2).grid(row=3,
-                                   column=4)
-
-        root2.mainloop()
+                  width=18,
+                  fg=FONT_COLOR2,
+                  font=BUTTON_FONT,
+                  bg=BG_COLOR_BUTTON,
+                  height=2).grid(row=2, column=2)
 
 
 app = Gui()

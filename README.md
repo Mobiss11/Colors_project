@@ -5,5 +5,5 @@ this script is used to identify colors from a photo and send them to a Google sp
 - python
 - tkitner
 - gspread
-- pillow as PIL
-- matplotlib
+- opencv
+- numpy

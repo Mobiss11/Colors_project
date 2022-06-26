@@ -28,9 +28,14 @@ lib64/
 parts/
 sdist/
 var/
+image/
+icon/
+gradient_files/
+credentials/
 *.egg-info/
 .installed.cfg
 *.egg
+files.py
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
