@@ -6,8 +6,6 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import *
 from tkinter import colorchooser
-from tkinter import tix
-from tkinter.tix import *
 
 import cv2
 import gspread
@@ -75,7 +73,7 @@ class Gui(object):
 
             colors = colors2
 
-            root = tix.Tk()
+            root = Tk()
             root.title(TITLE)
             root.iconbitmap(ICON)
             root.config(bg=BG_WINDOW)
