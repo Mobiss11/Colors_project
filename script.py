@@ -150,7 +150,7 @@ class Gui(object):
 
                 canvas.configure(scrollregion=canvas.bbox("all"))
 
-            canvas = tk.Canvas(root, borderwidth=0, background=BG_CANVAS, width=290, height=300)
+            canvas = tk.Canvas(root, borderwidth=0, background=BG_CANVAS, width=290, height=450)
             frame = tk.Frame(canvas, background=BG_CANVAS)
             vsb = tk.Scrollbar(root, orient=ORIENT, command=canvas.yview)
             canvas.configure(yscrollcommand=vsb.set)
