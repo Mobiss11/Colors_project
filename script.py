@@ -1,16 +1,16 @@
-import sys
-from pathlib import Path
-import pathlib
-from tkinter import *
-import tkinter as tk
-from tkinter import colorchooser
-import re
 import os
-from tkinter.tix import *
+import re
 import shutil
+import sys
+import tkinter as tk
+from pathlib import Path
+from tkinter import *
+from tkinter import colorchooser
+from tkinter import tix
+from tkinter.tix import *
 
-import gspread
 import cv2
+import gspread
 import numpy as np
 
 from config import *
@@ -75,15 +75,95 @@ class Gui(object):
 
             colors = colors2
 
-            root = Tk()
+            root = tix.Tk()
             root.title(TITLE)
             root.iconbitmap(ICON)
             root.config(bg=BG_WINDOW)
             root.geometry(ROOT_CONSTANT)
 
-            scroll_win = ScrolledWindow(root, width=300, height=460)
-            scroll_win.grid(row=3, column=1, padx=5, pady=3)
-            win = scroll_win.window
+            def buttons(frame):
+
+                for color_gr in colors:
+                    index = colors.index(color_gr)
+                    re_digits = re.compile(r"\b\d+\b")
+                    ls = re_digits.findall(colors[index])
+
+                    hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
+                    tk.Button(frame,
+                              text=f'{hex_color}',
+                              fg=FONT_COLOR,
+                              bg=hex_color,
+                              width=8,
+                              height=1,
+                              command=lambda color_gr=color_gr: self.table_gradient(color_gr)).grid(row=index,
+                                                                                                    pady=2,
+                                                                                                    padx=2,
+                                                                                                    column=1)
+                for color_3 in colors:
+                    index = colors.index(color_3)
+                    re_digits = re.compile(r"\b\d+\b")
+                    ls = re_digits.findall(colors[index])
+
+                    hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
+                    tk.Button(frame,
+                              text=f'{hex_color}',
+                              fg=FONT_COLOR,
+                              bg=hex_color,
+                              width=8,
+                              height=1,
+                              command=lambda color_3=color_3: self.table_two(color_3)).grid(row=index,
+                                                                                            pady=2,
+                                                                                            padx=2,
+                                                                                            column=2)
+                for color_4 in colors:
+                    index = colors.index(color_4)
+                    re_digits = re.compile(r"\b\d+\b")
+                    ls = re_digits.findall(colors[index])
+
+                    hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
+                    tk.Button(frame,
+                              text=f'{hex_color}',
+                              fg=FONT_COLOR,
+                              bg=hex_color,
+                              width=8,
+                              height=1,
+                              command=lambda color_4=color_4: self.table_third(color_4)).grid(row=index,
+                                                                                              pady=2,
+                                                                                              padx=2,
+                                                                                              column=3)
+                for color_5 in colors:
+                    index = colors.index(color_5)
+                    re_digits = re.compile(r"\b\d+\b")
+                    ls = re_digits.findall(colors[index])
+
+                    hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
+                    tk.Button(frame,
+                              text=f'{hex_color}',
+                              fg=FONT_COLOR,
+                              bg=hex_color,
+                              width=8,
+                              height=1,
+                              command=lambda color_5=color_5: self.table_fourth(color_5)).grid(row=index,
+                                                                                               pady=2,
+                                                                                               padx=2,
+                                                                                               column=4)
+
+            def onFrameConfigure(canvas):
+
+                canvas.configure(scrollregion=canvas.bbox("all"))
+
+            canvas = tk.Canvas(root, borderwidth=0, background=BG_CANVAS, width=290, height=300)
+            frame = tk.Frame(canvas, background=BG_CANVAS)
+            vsb = tk.Scrollbar(root, orient=ORIENT, command=canvas.yview)
+            canvas.configure(yscrollcommand=vsb.set)
+
+            vsb.grid(row=3, column=0, sticky=NS)
+            canvas.grid(row=3, column=1)
+            canvas.create_window((3, 3), window=frame, anchor="nw")
+
+            frame.bind(CONFIG, lambda event, canvas=canvas: onFrameConfigure(canvas))
+
+            buttons(frame)
 
             def sort(*args):
 
@@ -311,73 +391,6 @@ class Gui(object):
                        fg=FONT_COLOR2)
             opt.grid(row=2, column=2)
             variable.trace("w", sort)
-
-            for color_gr in colors:
-                index = colors.index(color_gr)
-                re_digits = re.compile(r"\b\d+\b")
-                ls = re_digits.findall(colors[index])
-
-                hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
-                tk.Button(win,
-                          text=f'{hex_color}',
-                          fg=FONT_COLOR,
-                          bg=hex_color,
-                          width=8,
-                          height=1,
-                          command=lambda color_gr=color_gr: self.table_gradient(color_gr)).grid(row=index,
-                                                                                                pady=2,
-                                                                                                padx=2,
-                                                                                                column=1)
-
-            for color_3 in colors:
-                index = colors.index(color_3)
-                re_digits = re.compile(r"\b\d+\b")
-                ls = re_digits.findall(colors[index])
-
-                hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
-                tk.Button(win,
-                          text=f'{hex_color}',
-                          fg=FONT_COLOR,
-                          bg=hex_color,
-                          width=8,
-                          height=1,
-                          command=lambda color_3=color_3: self.table_two(color_3)).grid(row=index,
-                                                                                        pady=2,
-                                                                                        padx=2,
-                                                                                        column=2)
-
-            for color_4 in colors:
-                index = colors.index(color_4)
-                re_digits = re.compile(r"\b\d+\b")
-                ls = re_digits.findall(colors[index])
-
-                hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
-                tk.Button(win,
-                          text=f'{hex_color}',
-                          fg=FONT_COLOR,
-                          bg=hex_color,
-                          width=8,
-                          height=1,
-                          command=lambda color_4=color_4: self.table_third(color_4)).grid(row=index,
-                                                                                          pady=2,
-                                                                                          padx=2,
-                                                                                          column=3)
-            for color_5 in colors:
-                index = colors.index(color_5)
-                re_digits = re.compile(r"\b\d+\b")
-                ls = re_digits.findall(colors[index])
-
-                hex_color = HEX_CONSTANT % (int(ls[0]), int(ls[1]), int(ls[2]))
-                tk.Button(win,
-                          text=f'{hex_color}',
-                          fg=FONT_COLOR,
-                          bg=hex_color,
-                          width=8,
-                          height=1,
-                          command=lambda color_5=color_5: self.table_fourth(color_5)).grid(row=index,
-                                                                                           pady=2,
-                                                                                           padx=2,
-                                                                                           column=4)
 
             root.mainloop()
 

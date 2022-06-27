@@ -6,7 +6,7 @@ DIR2 = 'image/all_img/'
 
 # Main window
 
-ROOT_CONSTANT = "600x570-290+17"
+ROOT_CONSTANT = "600x650-290+17"
 ROOT_CONSTANT1 = "135x40-1292+17"
 ROOT_CONSTANT2 = "135x40-1292+250"
 ROOT_CONSTANT3 = "135x40-1292+372"
@@ -32,6 +32,8 @@ SORT = ['RU', 'EN', 'ES', 'UA']
 LABEL_MENU = 'Cортировка'
 MENU_FONT = ('Corbel', 9)
 ClOSE_WINDOW_TEXT = 'Сортировка завершена\nперезапустите скрипт'
+BG_CANVAS = '#ffffff'
+ORIENT = "vertical"
 
 # Window tables
 
