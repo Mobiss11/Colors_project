@@ -25,8 +25,8 @@ gr_two = []
 gr_third = []
 gr_fourth = []
 
-window_gr_1 = np.zeros((190, 390, 3), dtype='uint8')
-window_gr_2 = np.zeros((190, 390, 3), dtype='uint8')
+window_gradient_1 = np.zeros((190, 390, 3), dtype='uint8')
+window_gradient_2 = np.zeros((190, 390, 3), dtype='uint8')
 window_1 = np.zeros((90, 400, 3), dtype='uint8')
 window_2 = np.zeros((90, 400, 3), dtype='uint8')
 window_3 = np.zeros((90, 400, 3), dtype='uint8')
@@ -409,9 +409,9 @@ class Gui(object):
             ls = re_digits.findall(gr[0])
             ls2 = re_digits.findall(gr[1])
 
-            figure_1 = cv2.rectangle(window_gr_1, (0, 0), (400, 200), (int(ls[2]), int(ls[1]), int(ls[0])),
+            figure_1 = cv2.rectangle(window_gradient_1, (0, 0), (400, 200), (int(ls[2]), int(ls[1]), int(ls[0])),
                                      thickness=cv2.FILLED)
-            figure_2 = cv2.rectangle(window_gr_2, (0, 0), (400, 200), (int(ls2[2]), int(ls2[1]), int(ls2[0])),
+            figure_2 = cv2.rectangle(window_gradient_2, (0, 0), (400, 200), (int(ls2[2]), int(ls2[1]), int(ls2[0])),
                                      thickness=cv2.FILLED)
 
             cv2.imwrite(FILE_NAME_GR_1, figure_1)
@@ -446,10 +446,10 @@ class Gui(object):
                 ls_1 = re_digits_1.findall(gr[0])
                 ls_2 = re_digits_1.findall(gr[1])
 
-                figure_1_change = cv2.rectangle(window_gr_1, (0, 0), (400, 200),
+                figure_1_change = cv2.rectangle(window_gradient_1, (0, 0), (400, 200),
                                                 (int(ls_1[2]), int(ls_1[1]), int(ls_1[0])),
                                                 thickness=cv2.FILLED)
-                figure_2_change = cv2.rectangle(window_gr_2, (0, 0), (400, 200),
+                figure_2_change = cv2.rectangle(window_gradient_2, (0, 0), (400, 200),
                                                 (int(ls_2[2]), int(ls_2[1]), int(ls_2[0])),
                                                 thickness=cv2.FILLED)
 
