@@ -6,14 +6,15 @@ __pycache__/
 *$py.class
 venv/
 
-config.py
 *.json
 *.exe
 logo/
-
+credentials.json
+images
 # C extensions
 *.so
-
+.env
+.idea
 # Distribution / packaging
 .Python
 env/

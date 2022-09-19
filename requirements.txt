@@ -1,0 +1,7 @@
+python-dotenv==0.20.0
+opencv-python==4.5.3.56
+opencv-contrib-python==4.6.0.66
+gspread==5.4.0
+numpy==1.22.4
+future~=0.18.2
+Pillow~=9.1.1
